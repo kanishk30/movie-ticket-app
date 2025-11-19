@@ -4,6 +4,9 @@ const User = require("../models/user.model.js")
 
 const userRouter = express.Router(); // router frome express.
 
+const bcrypt = require('bcrypt');
+
+
 // register (signup)
 
 userRouter.post("/register", async (req, res) => {
@@ -15,6 +18,11 @@ userRouter.post("/register", async (req, res) => {
                 message: "User already exists with the email"
             })
         }
+
+        // hashing password
+        const salt = await bcrypt.genSalt() // default 10 rounds.
+        const hashedPwd = bcrypt.hashSync(req.body.password, salt);
+        req.body.password = hashedPwd;
         // fresh user:
         const newUser = await User(req.body);
         await newUser.save();
