@@ -7,9 +7,10 @@ dotEnv.config()
 const app = express()
 dbConfig.connectDb()
 
-app.use("/", (req, res) => {
-    res.send("Hello from server")
-})
+const userRoutes = require('./routes/user.route.js')
+
+app.use(express.json())
+app.use('/api/auth', userRoutes)
 
 app.listen(8001, () => {
     console.log("Server started..")
