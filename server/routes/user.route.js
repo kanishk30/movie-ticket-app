@@ -31,4 +31,35 @@ userRouter.post("/register", async (req, res) => {
     }
 })
 
+// login (signin)
+
+userRouter.post("/login", async (req, res) => {
+    try {
+        const user = await User.findOne({email: req.body.email});
+        if(!user){
+            return res.send({
+                success: false,
+                message: "User does not exist. Please register"
+            })
+        }
+
+        if(req.body.password !== user.password) {
+             return res.send({
+                success: false,
+                message: "Please verify the password. It is incorrect."
+            })
+        }
+
+         return res.send({
+                success: true,
+                message: "User logged in successfully."
+            })
+    } catch (error) {
+        res.status(500).send({
+            success: false,
+            message: "Something went wrong!"
+        })
+    }
+})
+
 module.exports = userRouter
