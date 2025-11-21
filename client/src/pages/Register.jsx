@@ -2,7 +2,16 @@ import React from "react";
 import {Form, Input, Button } from 'antd';
 import {Link} from "react-router-dom"
 
+import { register } from "../backend/auth";
+
 function Register() {
+
+  const onSubmit = async values => {
+    const userData = await register(values)
+    console.log(userData)
+    
+  }
+
   return (
     <>
       <header className="App-header">
@@ -11,7 +20,7 @@ function Register() {
             <h1>Register to BookMyShow</h1>
           </section>
           <section className="right-section">
-            <Form layout="vertical">
+            <Form layout="vertical" onFinish={onSubmit}>
               <Form.Item
                 label="Name"
                 htmlFor="name"

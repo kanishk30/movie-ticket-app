@@ -1,0 +1,15 @@
+import axios from 'axios'
+import { API_BASE_URL } from './config'
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+export const register = async (values) => {
+    try {
+        const response = api.post('/api/auth/register', values);
+        return response.data
+    } catch (error) {
+        console.log(error)
+    }
+}
