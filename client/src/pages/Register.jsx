@@ -1,5 +1,5 @@
 import React from "react";
-import {Form, Input, Button } from 'antd';
+import {Form, Input, Button, message } from 'antd';
 import {Link} from "react-router-dom"
 
 import { register } from "../backend/auth";
@@ -7,9 +7,20 @@ import { register } from "../backend/auth";
 function Register() {
 
   const onSubmit = async values => {
+    try {
+      
     const userData = await register(values)
     console.log(userData)
-    
+    if(userData.success) {
+      message.success(userData.message)
+  } else {
+      message.error(userData.message)
+  }
+    } catch (error) {
+      message.error(error)
+      
+    }
+
   }
 
   return (

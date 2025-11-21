@@ -7,9 +7,19 @@ const api = axios.create({
 
 export const register = async (values) => {
     try {
-        const response = api.post('/api/auth/register', values);
+        const response = await api.post('/api/auth/register', values);
         return response.data
     } catch (error) {
         console.log(error)
     }
 }
+
+export const login = async (values) => {
+    try {
+        const response = await api.post('/api/auth/login', values);
+        return response.data
+    } catch (error) {
+        console.log(error)
+    }
+}
+

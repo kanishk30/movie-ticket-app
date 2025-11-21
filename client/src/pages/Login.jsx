@@ -1,8 +1,23 @@
 import React from 'react'
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import {Link} from "react-router-dom"
+import { login} from '../backend/auth'
 
 function Login() {
+
+    const onSubmit = async (values) => {
+        try {
+            const res = await login(values);
+            console.log(res)
+            if(res.success) {
+                message.success(res.message)
+            } else {
+                message.error(res.message)
+            }
+        } catch (error) {
+            message.error(error.message)
+        }
+    }
   return (
     <>
     <header className="App-header">
@@ -12,7 +27,7 @@ function Login() {
         </section>
 
         <section className="right-section">
-          <Form layout="vertical">
+          <Form layout="vertical" onFinish={onSubmit}>
     
           <Form.Item
               label="Email"
