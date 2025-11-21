@@ -21,6 +21,7 @@ userRouter.post("/register", async (req, res) => {
 
         // hashing password
         const salt = await bcrypt.genSalt() // default 10 rounds.
+        console.log(salt)
         const hashedPwd = bcrypt.hashSync(req.body.password, salt);
         req.body.password = hashedPwd;
         // fresh user:
@@ -51,7 +52,9 @@ userRouter.post("/login", async (req, res) => {
             })
         }
 
-        if(req.body.password !== user.password) {
+        const isPasswordValid = await bcrypt.compare(req.body.password, user.password)
+        console.log(isPasswordValid)
+        if(!isPasswordValid) {
              return res.send({
                 success: false,
                 message: "Please verify the password. It is incorrect."
