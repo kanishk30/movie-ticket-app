@@ -1,23 +1,28 @@
-const express = require("express")
-const dotEnv = require("dotenv")
-const cors = require("cors")
+const express = require("express");
+const dotEnv = require("dotenv");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
-const dbConfig = require("./dbConfig.js")
+const dbConfig = require("./dbConfig.js");
 
-dotEnv.config()
-const app = express()
-dbConfig.connectDb()
+dotEnv.config();
+const app = express();
+dbConfig.connectDb();
 
-const userRoutes = require('./routes/user.route.js')
+const userRoutes = require("./routes/user.route.js");
 
-app.use(express.json())
+app.use(express.json());
 
-app.use(cors({
-    origin: "http://localhost:5173"
-}))
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
-app.use('/api/auth', userRoutes)
+app.use(cookieParser());
+
+app.use("/api/auth", userRoutes);
 
 app.listen(8001, () => {
-    console.log("Server started..")
-})
+  console.log("Server started..");
+});

@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 
+const isAuth = require("../middlewares/authMiddleware.js");
+
 // register (signup)
 
 userRouter.post("/register", async (req, res) => {
@@ -68,6 +70,10 @@ userRouter.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
+    res.cookie("jwtToken", token, {
+      httpOnly: true,
+    });
+
     return res.send({
       success: true,
       message: "User logged in successfully.",
@@ -79,6 +85,11 @@ userRouter.post("/login", async (req, res) => {
       message: "Something went wrong!",
     });
   }
+
+  userRouter.post("/current-user", isAuth, async (req, res) => {
+    const userId = req.userId;
+    res.send({ userId: userId });
+  });
 });
 
 module.exports = userRouter;
