@@ -78,6 +78,7 @@ userRouter.post("/login", async (req, res) => {
       success: true,
       message: "User logged in successfully.",
       token: token,
+      user: user,
     });
   } catch (error) {
     res.status(500).send({
@@ -85,11 +86,23 @@ userRouter.post("/login", async (req, res) => {
       message: "Something went wrong!",
     });
   }
+});
 
-  userRouter.post("/current-user", isAuth, async (req, res) => {
-    const userId = req.userId;
-    res.send({ userId: userId });
-  });
+userRouter.get("/current-user", isAuth, async (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.send(401).json({ message: "Not authorized. No valid token." });
+  }
+
+  try {
+    // trimming off password from final response.
+    const verifiedUser = await User.findById(userId).select("-password");
+    console.log(verifiedUser);
+    res.json(verifiedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = userRouter;
