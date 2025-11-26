@@ -10,5 +10,6 @@ export const getAllMovies = async () => {
   try {
     const response = await api.get("/api/movie/all");
     console.log(response);
+    return response.data;
   } catch (error) {}
 };
