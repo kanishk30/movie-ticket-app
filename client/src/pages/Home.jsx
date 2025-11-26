@@ -2,33 +2,38 @@ import React, { useEffect } from "react";
 import { getCurrentUser } from "../backend/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../redux/userSlice";
+import NavBar from "../components/Navbar.jsx";
 
 const Home = () => {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
   const getUserData = async () => {
     try {
-      const userData = await getCurrentUser();
-      console.log(userData);
-      dispatch(setUserData(userData));
+      const user = await getCurrentUser();
+      dispatch(setUserData(user));
     } catch (error) {
       console.log("user data error", error);
     }
+  };
+
+  const handleLogout = () => {
+    // clear token or call backend logout
+    localStorage.removeItem("token");
+    dispatch(setUserData(null));
   };
 
   useEffect(() => {
     getUserData();
   }, []);
 
-  if (!userData) {
-    console.log("waiting for userdata....");
-  }
-
   return (
     <>
-      <div>Welcome, Home!</div>
-      <h3>{userData?.name}</h3>
-      <h3>{userData?.email}</h3>
+      <NavBar user={userData} onLogout={handleLogout} />
+
+      <div style={{ padding: 20 }}>
+        <h2>Welcome Home!</h2>
+      </div>
     </>
   );
 };
