@@ -1,6 +1,7 @@
 import "./App.css";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
+import Admin from "./pages/Admin/index.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -15,6 +16,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/home" element={<Home />} />
+
           <Route
             path="/login"
             element={
@@ -31,6 +33,7 @@ function App() {
               </PublicRoute>
             }
           />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </BrowserRouter>
     </>
