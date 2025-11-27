@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Table, Button } from "antd";
 import { getAllMovies } from "../../backend/movie";
 import moment from "moment";
 
@@ -65,7 +65,14 @@ const MovieList = () => {
     },
   ];
 
-  return <Table dataSource={movies} columns={tableHeadings} />;
+  return (
+    <>
+      <div className="justify-content-end d-flex">
+        <Button type="primary">Add movie</Button>
+      </div>
+      <Table dataSource={movies} columns={tableHeadings} />
+    </>
+  );
 };
 
 export default MovieList;
