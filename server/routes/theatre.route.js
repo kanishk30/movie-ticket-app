@@ -1,0 +1,78 @@
+const express = require("express");
+const Theatre = require("../models/theatre.model");
+
+const theatreRoute = express.Router();
+
+// add theatre
+
+theatreRoute.post("/add", async (req, res) => {
+  try {
+    const newTheatre = new Theatre(req.body);
+    await newTheatre.save();
+
+    res.send({
+      success: true,
+      message: "New theatre added",
+    });
+  } catch (error) {
+    console.log(error);
+    res.send({
+      success: false,
+      message: error.message || "Failed to add a new theatre",
+    });
+  }
+});
+
+// get theatre
+
+theatreRoute.get("/all", async (req, res) => {
+  try {
+    const allTheatres = await Theatre.find();
+    res.send({
+      success: true,
+      message: "Successfully fetched all theatres",
+      data: allTheatres,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// update theatre
+
+theatreRoute.put("/update", async (req, res) => {
+  try {
+    await Theatre.findByIdAndUpdate(req.body.theatreId, req.body);
+    res.send({
+      success: true,
+      message: "Theatre updated successfully",
+    });
+  } catch (error) {
+    res.send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// delete theatre
+
+theatreRoute.delete("/delete", async (req, res) => {
+  try {
+    await Theatre.findByIdAndDelete(req.body.theatreId);
+    res.send({
+      success: true,
+      message: "The theatre has been deleted successfully.",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+module.exports = theatreRoute;

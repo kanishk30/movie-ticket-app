@@ -1,5 +1,4 @@
 const express = require("express");
-const Movie = require("../models/movie.model");
 const {
   addMovies,
   updateMovie,
