@@ -1,15 +1,30 @@
 import React from "react";
-import { Modal, Form, Row, Col, Input, Select, Button } from "antd";
+import { Modal, Form, Row, Col, Input, Select, Button, message } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import { addMovie } from "../../backend/movie";
 
 function MovieForm({ isModalOpen, setIsModalOpen }) {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
+  const onFinish = async (values) => {
+    console.log(values);
+    try {
+      const response = await addMovie(values);
+      if (response.success) {
+        message.success(response.message);
+      } else {
+        message.error(response.message);
+      }
+    } catch (error) {
+      message.error(error);
+    }
+  };
+
   return (
     <Modal open={isModalOpen} width={800} onCancel={handleCancel}>
-      <Form layout="vertical" style={{ width: "100%" }}>
+      <Form layout="vertical" style={{ width: "100%" }} onFinish={onFinish}>
         <Row
           gutter={{
             xs: 6,
@@ -158,24 +173,37 @@ function MovieForm({ isModalOpen, setIsModalOpen }) {
               </Col>
               <Col span={16}>
                 <Form.Item
-                  label="Poster  URL"
-                  htmlFor="poster"
-                  name="poster"
+                  label="Poster URL"
+                  htmlFor="posterPath"
+                  name="posterPath"
                   className="d-block"
                   rules={[
                     { required: true, message: "Movie Poster  is required!" },
                   ]}
                 >
                   <Input
-                    id="poster"
+                    id="posterPath"
                     type="text"
-                    placeholder="Enter the poster URL"
+                    placeholder="Enter the posterPath URL"
                   ></Input>
                 </Form.Item>
               </Col>
             </Row>
           </Col>
         </Row>
+        <Form.Item>
+          <Button
+            block
+            type="primary"
+            htmlType="submit"
+            style={{ fontSize: "1rem", fontWeight: "600" }}
+          >
+            Submit the Data
+          </Button>
+          <Button className="mt-3" block>
+            Cancel
+          </Button>
+        </Form.Item>
       </Form>
     </Modal>
   );

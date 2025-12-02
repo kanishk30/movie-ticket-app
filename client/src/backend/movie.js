@@ -13,3 +13,12 @@ export const getAllMovies = async () => {
     return response.data;
   } catch (error) {}
 };
+
+export const addMovie = async (values) => {
+  try {
+    const response = await api.post("/api/movie/add", values);
+    return response.data;
+  } catch (error) {
+    console.log("addMovie", error);
+  }
+};
