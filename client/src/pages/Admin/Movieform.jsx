@@ -1,30 +1,58 @@
 import React from "react";
 import { Modal, Form, Row, Col, Input, Select, Button, message } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { addMovie } from "../../backend/movie";
+import { addMovie, updateMovie } from "../../backend/movie";
 
-function MovieForm({ isModalOpen, setIsModalOpen }) {
+function MovieForm({
+  isModalOpen,
+  setIsModalOpen,
+  formType,
+  selectedMovie,
+  setSelectedMovie,
+}) {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
+  console.log({ formType, selectedMovie, setSelectedMovie });
+
   const onFinish = async (values) => {
-    console.log(values);
-    try {
-      const response = await addMovie(values);
-      if (response.success) {
-        message.success(response.message);
-      } else {
-        message.error(response.message);
+    if (formType === "add") {
+      try {
+        const response = await addMovie(values);
+        if (response.success) {
+          message.success(response.message);
+        } else {
+          message.error(response.message);
+        }
+      } catch (error) {
+        message.error(error);
       }
-    } catch (error) {
-      message.error(error);
+    } else {
+      try {
+        const response = await updateMovie({
+          ...values,
+          movieId: selectedMovie._id,
+        });
+        if (response.success) {
+          message.success(response.message);
+        } else {
+          message.error(response.message);
+        }
+      } catch (error) {
+        message.error(error);
+      }
     }
   };
 
   return (
     <Modal open={isModalOpen} width={800} onCancel={handleCancel}>
-      <Form layout="vertical" style={{ width: "100%" }} onFinish={onFinish}>
+      <Form
+        layout="vertical"
+        style={{ width: "100%" }}
+        onFinish={onFinish}
+        initialValues={selectedMovie}
+      >
         <Row
           gutter={{
             xs: 6,

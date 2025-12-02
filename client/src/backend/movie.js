@@ -22,3 +22,12 @@ export const addMovie = async (values) => {
     console.log("addMovie", error);
   }
 };
+
+export const updateMovie = async (values) => {
+  try {
+    const response = await api.put("/api/movie/update", values);
+    return response.data;
+  } catch (error) {
+    console.log("updateMovie", error);
+  }
+};

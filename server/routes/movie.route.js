@@ -15,7 +15,7 @@ const movieRouter = express.Router(); // router frome express.
 movieRouter.post("/add", addMovies);
 
 // update
-movieRouter.put("/update/:id", updateMovie);
+movieRouter.put("/update", updateMovie);
 
 // delete
 movieRouter.delete("/delete/:id", deleteMovie);

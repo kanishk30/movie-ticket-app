@@ -3,10 +3,13 @@ import { Table, Button } from "antd";
 import { getAllMovies } from "../../backend/movie";
 import moment from "moment";
 import Movieform from "./Movieform";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const MovieList = () => {
   const [movies, setMovies] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formType, setFormType] = useState("add");
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   const getMovies = async () => {
     try {
@@ -65,6 +68,28 @@ const MovieList = () => {
       title: "Ratings",
       dataIndex: "rating",
     },
+    {
+      title: "Action",
+      render: (value, record, index) => {
+        console.log("edit data", record);
+        return (
+          <div className="d-flex gap-10">
+            <Button
+              onClick={() => {
+                setIsModalOpen(true);
+                setFormType("edit");
+                setSelectedMovie(record);
+              }}
+            >
+              <EditOutlined />
+            </Button>
+            <Button>
+              <DeleteOutlined />
+            </Button>
+          </div>
+        );
+      },
+    },
   ];
 
   return (
@@ -74,6 +99,8 @@ const MovieList = () => {
           type="primary"
           onClick={() => {
             setIsModalOpen(true);
+            setSelectedMovie(null);
+            setFormType("add");
           }}
         >
           Add movie
@@ -81,7 +108,13 @@ const MovieList = () => {
       </div>
       <Table dataSource={movies} columns={tableHeadings} />
       {isModalOpen ? (
-        <Movieform isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
+        <Movieform
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          formType={formType}
+          selectedMovie={selectedMovie}
+          setSelectedMovie={setSelectedMovie}
+        />
       ) : null}
     </>
   );

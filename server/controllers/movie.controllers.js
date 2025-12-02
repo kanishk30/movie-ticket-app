@@ -21,8 +21,7 @@ const addMovies = async (req, res) => {
 
 const updateMovie = async (req, res) => {
   try {
-    const movieId = req.params.id;
-    const movie = await Movie.findByIdAndUpdate(movieId, req.body);
+    const movie = await Movie.findByIdAndUpdate(req.body.movieId, req.body);
     res.send({
       success: true,
       message: "Movie updated successfully",
