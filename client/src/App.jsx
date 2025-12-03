@@ -5,6 +5,7 @@ import Admin from "./pages/Admin/index.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Partner from "./pages/Partner";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -34,6 +35,7 @@ function App() {
             }
           />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/partner" element={<Partner />} />
         </Routes>
       </BrowserRouter>
     </>

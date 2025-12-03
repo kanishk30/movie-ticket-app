@@ -75,4 +75,22 @@ theatreRoute.delete("/delete", async (req, res) => {
   }
 });
 
+// get all theatres by owners
+
+theatreRoute.post("get-all-theatres-by-owner", async (req, res) => {
+  try {
+    const allTheatresOfOwner = await Theatre.find({ owner: req.body.owner });
+    res.send({
+      success: true,
+      message: "All theatres fetched successfully",
+      data: allTheatresOfOwner,
+    });
+  } catch (error) {
+    res.send({
+      success: false,
+      message: "Something went wrong. Unable to fetch theares.",
+    });
+  }
+});
+
 module.exports = theatreRoute;
