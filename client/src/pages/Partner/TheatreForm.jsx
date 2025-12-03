@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Form, Row, Col, Input, Select, Button, message } from "antd";
 
-const TheatreForm = ({ isModalOpen, setIsModalOpen }) => {
+const TheatreForm = ({ isModalOpen, setIsModalOpen, selectedTheatre }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -11,8 +11,8 @@ const TheatreForm = ({ isModalOpen, setIsModalOpen }) => {
       <Form
         layout="vertical"
         style={{ width: "100%" }}
-        onFinish={onFinish}
-        initialValues={selectedMovie}
+        // onFinish={onFinish}
+        // initialValues={selectedMovie}
       >
         <Row
           gutter={{
