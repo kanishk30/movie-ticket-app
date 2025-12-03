@@ -8,9 +8,18 @@ const api = axios.create({
 
 export const addTheatre = async (payload) => {
   try {
-    const response = await api.post("/api/theatre/add", values);
+    const response = await api.post("/api/theatre/add", payload);
     return response.data;
   } catch (error) {
-    console.log("addMovie", error);
+    console.log("addTheatre", error);
+  }
+};
+
+export const updateTheatre = async (payload) => {
+  try {
+    const response = await api.put("/api/theatre/update", payload);
+    return response.data;
+  } catch (error) {
+    console.log("updateTheatre", error);
   }
 };

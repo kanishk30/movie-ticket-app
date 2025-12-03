@@ -1,9 +1,45 @@
 import React from "react";
 import { Modal, Form, Row, Col, Input, Select, Button, message } from "antd";
+import { addTheatre, updateTheatre } from "../../backend/theatre";
+import { useSelector, useDispatch } from "react-redux";
 
-const TheatreForm = ({ isModalOpen, setIsModalOpen, selectedTheatre }) => {
+const TheatreForm = ({
+  formType,
+  isModalOpen,
+  setIsModalOpen,
+  selectedTheatre,
+  setSelectedTheatre,
+}) => {
+  const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+
+  const onFinish = async (values) => {
+    try {
+      // if (!userData) {
+      //   message.error("No user found. Please login.");
+      //   return;
+      // }
+      let resp = null;
+      if (formType === "add") {
+        // HARDCODED TEMPORARILY.
+        const payload = { ...values, owner: "691fd281880f6df83c4862cb" };
+        resp = await addTheatre(payload);
+      } else {
+        // edit flow later.
+      }
+      console.log(resp, "response from add");
+      if (resp && resp.success) {
+        message.success("Theatre added.");
+      } else {
+        message.error(response?.message || "Something went wrong");
+      }
+    } catch (error) {
+      message.error(error?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -11,8 +47,8 @@ const TheatreForm = ({ isModalOpen, setIsModalOpen, selectedTheatre }) => {
       <Form
         layout="vertical"
         style={{ width: "100%" }}
-        // onFinish={onFinish}
-        // initialValues={selectedMovie}
+        onFinish={onFinish}
+        initialValues={selectedTheatre}
       >
         <Row
           gutter={{

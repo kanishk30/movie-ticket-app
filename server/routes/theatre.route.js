@@ -7,15 +7,18 @@ const theatreRoute = express.Router();
 
 theatreRoute.post("/add", async (req, res) => {
   try {
+    console.log("received data in add", req.body);
     const newTheatre = new Theatre(req.body);
     await newTheatre.save();
 
     res.send({
       success: true,
       message: "New theatre added",
+      data: newTheatre,
     });
   } catch (error) {
-    console.log(error);
+    console.log("error in add theatre", error);
+
     res.send({
       success: false,
       message: error.message || "Failed to add a new theatre",
@@ -51,6 +54,7 @@ theatreRoute.put("/update", async (req, res) => {
       message: "Theatre updated successfully",
     });
   } catch (error) {
+    console.log("error in update", error);
     res.send({
       success: false,
       message: error.message,
