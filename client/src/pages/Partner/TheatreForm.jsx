@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Row, Col, Input, Select, Button, message } from "antd";
 import { addTheatre, updateTheatre } from "../../backend/theatre";
 import { useSelector, useDispatch } from "react-redux";
+import { setUserData } from "../../redux/userSlice";
+import { getCurrentUser } from "../../backend/auth";
 
 const TheatreForm = ({
   formType,
@@ -13,20 +15,33 @@ const TheatreForm = ({
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
+  const getUserData = async () => {
+    try {
+      const user = await getCurrentUser();
+      dispatch(setUserData(user));
+    } catch (error) {
+      console.log("user data error", error);
+    }
+  };
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
   const onFinish = async (values) => {
     try {
-      // if (!userData) {
-      //   message.error("No user found. Please login.");
-      //   return;
-      // }
+      if (!userData) {
+        message.error("No user found. Please login.");
+        return;
+      }
       let resp = null;
       if (formType === "add") {
         // HARDCODED TEMPORARILY.
-        const payload = { ...values, owner: "691fd281880f6df83c4862cb" };
+        const payload = { ...values, owner: userData._id };
         resp = await addTheatre(payload);
       } else {
         // edit flow later.
