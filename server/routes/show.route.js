@@ -1,0 +1,97 @@
+const express = require("express");
+const Show = require("../models/show.model");
+
+const showRouter = express.Router();
+
+// create a show
+showRouter.post("/add", async (req, res) => {
+  try {
+    const newShow = new Show(req.body);
+    await newShow.save();
+    res.send({
+      success: true,
+      message: "New show added",
+      data: newShow,
+    });
+  } catch (error) {
+    console.log("error in add show", error);
+    res.send({
+      success: false,
+      message: error.message || "Failed to add a new show",
+    });
+  }
+});
+
+// Delete show
+showRouter.delete("/delete", async (req, res) => {
+  try {
+    await Show.findByIdAndDelete(req.body.showId);
+    res.send({
+      success: true,
+      message: "The show has been deleted successfully.",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// update show
+showRouter.put("/update", async (req, res) => {
+  try {
+    await Show.findByIdAndUpdate(req.body.showId, req.body);
+    res.send({
+      success: true,
+      message: "Show updated successfully",
+    });
+  } catch (error) {
+    console.log("error in update", error);
+    res.send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// get all shows & theatres for a movie for a given date
+
+showRouter.get("/get-all-theatres-by-movie", async (req, res) => {
+  try {
+    const { movie, date } = req.body;
+    const shows = await Show.find({ movie, date });
+
+    res.send({
+      success: true,
+      message: "Shows fetched successfully",
+      shows: shows,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.send({
+      success: false,
+      message: "Couldnt fetch shows",
+    });
+  }
+});
+
+// get details of a show by ID
+
+showRouter.get("get-show-by-id", async (req, res) => {
+  try {
+    const show = Show.findById(req.body.showId);
+    res.send({
+      success: true,
+      message: "Shows fetched successfully",
+      data: show,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.send({
+      success: false,
+      message: "Couldnt fetch show",
+    });
+  }
+});
+module.exports = showRouter;
