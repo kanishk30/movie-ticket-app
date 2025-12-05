@@ -16,6 +16,9 @@ const TheatreListPartner = () => {
   const [formType, setFormType] = useState("add");
   const [selectedTheatre, setSelectedTheatre] = useState(null);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isShowModalOpen, setIsShowModalOpen] = useState(false);
+
   const tableHeadings = [
     {
       title: "Name",
@@ -59,11 +62,22 @@ const TheatreListPartner = () => {
             >
               <EditOutlined />
             </Button>
-            <Button>
+            <Button
+              onClick={() => {
+                setIsDeleteModalOpen(true);
+                setSelectedTheatre(record);
+              }}
+            >
               <DeleteOutlined />
             </Button>
-            <Button>
+            <Button
+              onClick={() => {
+                setIsShowModalOpen(true);
+                setSelectedTheatre(record);
+              }}
+            >
               <PlusOutlined />
+              Shows
             </Button>
           </div>
         );

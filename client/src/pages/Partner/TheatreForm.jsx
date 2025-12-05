@@ -11,6 +11,7 @@ const TheatreForm = ({
   setIsModalOpen,
   selectedTheatre,
   setSelectedTheatre,
+  getData,
 }) => {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -49,6 +50,10 @@ const TheatreForm = ({
       console.log(resp, "response from add");
       if (resp && resp.success) {
         message.success("Theatre added.");
+        if (getData) {
+          getData();
+        }
+        setIsModalOpen(false);
       } else {
         message.error(response?.message || "Something went wrong");
       }
