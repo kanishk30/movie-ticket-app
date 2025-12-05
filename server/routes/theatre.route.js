@@ -26,7 +26,7 @@ theatreRoute.post("/add", async (req, res) => {
   }
 });
 
-// get theatre
+// get all theatres
 
 theatreRoute.get("/all", async (req, res) => {
   try {
@@ -81,7 +81,7 @@ theatreRoute.delete("/delete", async (req, res) => {
 
 // get all theatres by owners
 
-theatreRoute.post("get-all-theatres-by-owner", async (req, res) => {
+theatreRoute.post("/get-all-theatres-by-owner", async (req, res) => {
   try {
     const allTheatresOfOwner = await Theatre.find({ owner: req.body.owner });
     res.send({

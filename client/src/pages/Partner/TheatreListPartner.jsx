@@ -1,11 +1,17 @@
-import React, { useState } from "react";
-import { Table, Button } from "antd";
+import React, { useEffect, useState } from "react";
+import { Table, Button, message } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import TheatreForm from "./TheatreForm";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllTheatres } from "../../backend/theatre";
+import { getCurrentUser } from "../../backend/auth";
+import { setUserData } from "../../redux/userSlice";
 
 const TheatreListPartner = () => {
   const [theatres, setTheatres] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const [formType, setFormType] = useState("add");
   const [selectedTheatre, setSelectedTheatre] = useState(null);
@@ -65,6 +71,36 @@ const TheatreListPartner = () => {
     },
   ];
 
+  const getData = async (userId) => {
+    try {
+      const ownerId = userId || userData?._id;
+      if (!ownerId) {
+        message.error("User data not available. Please login.");
+        return;
+      }
+
+      const response = await getAllTheatres({ owner: ownerId });
+      if (response && response.success) {
+        const allTheares = response.data || [];
+        setTheatres(allTheares);
+      } else {
+        message.error(response?.message || "something went wrong");
+      }
+    } catch (error) {
+      message.error(error?.message || "something went wrong");
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      const user = await getCurrentUser();
+      dispatch(setUserData(user || null));
+      if (user) {
+        getData(user._id);
+      }
+    })();
+  }, []);
+
   return (
     <div>
       <Button
@@ -85,6 +121,7 @@ const TheatreListPartner = () => {
           formType={formType}
           selectedTheatre={selectedTheatre}
           setSelectedTheatre={setSelectedTheatre}
+          getData={getData}
         />
       ) : null}
     </div>
