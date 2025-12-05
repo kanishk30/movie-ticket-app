@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use("/api/auth", userRoutes);
 app.use("/api/movie", movieRoutes);
 app.use("/api/theatre", theatreRoutes);
-app.use("/api/show", showRoutes);
+app.use("/api/shows", showRoutes);
 
 app.listen(8001, () => {
   console.log("Server started..");
