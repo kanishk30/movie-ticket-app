@@ -143,6 +143,8 @@ const TheatreListPartner = () => {
         <ShowModal
           isModalOpen={isShowModalOpen}
           setIsModalOpen={setIsShowModalOpen}
+          selectedTheatre={selectedTheatre}
+          setSelectedTheatre={setSelectedTheatre}
         />
       ) : null}
     </div>

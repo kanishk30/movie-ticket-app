@@ -7,7 +7,12 @@ import { getAllMovies } from "../../backend/movie";
 
 import { getShows, addShow } from "../../backend/show";
 
-const showModal = ({ isModalOpen, setIsModalOpen }) => {
+const showModal = ({
+  isModalOpen,
+  setIsModalOpen,
+  selectedTheatre,
+  setSelectedtheatre,
+}) => {
   const [movies, setMovies] = useState([]);
   const [shows, setShows] = useState([]);
   const [view, setView] = useState("table"); // form == add/edit show ; table == list of shows.
@@ -26,7 +31,9 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
         message.error(allMovies.error);
       }
 
-      const allShowsResponse = await getShows();
+      const allShowsResponse = await getShows({
+        theatreId: selectedTheatre._id,
+      });
       setShows(allShowsResponse.data);
       if (allShowsResponse.success) {
         console.log(allShowsResponse);
@@ -43,9 +50,13 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
     getData();
   }, []);
 
+  console.log("selectedTheatre", selectedTheatre);
   const onFinish = async (values) => {
     try {
-      const response = await addShow(values);
+      const response = await addShow({
+        ...values,
+        theatre: selectedTheatre._id,
+      });
       if (response.success) {
         message.success(response.message);
         setView("table");
@@ -95,7 +106,9 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
     {
       title: "Theatre",
       dataIndex: "theatre",
-      key: "theatre",
+      render: (value, record) => {
+        return record.theatre.name;
+      },
     },
   ];
 
