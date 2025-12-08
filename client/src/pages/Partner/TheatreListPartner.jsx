@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllTheatres } from "../../backend/theatre";
 import { getCurrentUser } from "../../backend/auth";
 import { setUserData } from "../../redux/userSlice";
+import ShowModal from "./ShowModal";
 
 const TheatreListPartner = () => {
   const [theatres, setTheatres] = useState(null);
@@ -136,6 +137,12 @@ const TheatreListPartner = () => {
           selectedTheatre={selectedTheatre}
           setSelectedTheatre={setSelectedTheatre}
           getData={getData}
+        />
+      ) : null}
+      {isShowModalOpen ? (
+        <ShowModal
+          isModalOpen={isShowModalOpen}
+          setIsModalOpen={setIsShowModalOpen}
         />
       ) : null}
     </div>
