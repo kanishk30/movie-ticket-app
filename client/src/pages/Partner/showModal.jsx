@@ -5,6 +5,8 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { getAllMovies } from "../../backend/movie";
 
+import { getShows, addShow } from "../../backend/show";
+
 const showModal = ({ isModalOpen, setIsModalOpen }) => {
   const [movies, setMovies] = useState([]);
   const [shows, setShows] = useState([]);
@@ -14,8 +16,7 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
     setIsModalOpen(false);
   };
 
-  // get the data for shows
-
+  // get the data for all movies
   const getData = async () => {
     try {
       const allMovies = await getAllMovies();
@@ -23,6 +24,14 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
         setMovies(allMovies.data);
       } else {
         message.error(allMovies.error);
+      }
+
+      const allShowsResponse = await getShows();
+      setShows(allShowsResponse.data);
+      if (allShowsResponse.success) {
+        console.log(allShowsResponse);
+      } else {
+        console.log("error in shows");
       }
     } catch (error) {
       message.error(error.message);
@@ -34,7 +43,20 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
     getData();
   }, []);
 
-  const onFinish = () => {};
+  const onFinish = async (values) => {
+    try {
+      const response = await addShow(values);
+      if (response.success) {
+        message.success(response.message);
+        setView("table");
+      } else {
+        message.error("Cannot add show. Please try again");
+      }
+    } catch (error) {
+      console.log("Add show error", error);
+      message.error("Cannot add show. Please try again");
+    }
+  };
 
   const tableHeadings = [
     {
@@ -66,7 +88,9 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
     {
       title: "Movie",
       dataIndex: "movie",
-      key: "movie",
+      render: (value, record) => {
+        return record.movie.title;
+      },
     },
     {
       title: "Theatre",
@@ -168,11 +192,16 @@ const showModal = ({ isModalOpen, setIsModalOpen }) => {
                     { required: true, message: "Show movie is required!" },
                   ]}
                 >
-                  <Input
+                  <Select
+                    placeholder="Select movie name"
                     id="movie"
-                    type="text"
-                    placeholder="Enter the Show movie"
-                  ></Input>
+                    style={{ width: "100%", height: "45px" }}
+                    options={movies.map((movie) => ({
+                      key: movie._id,
+                      label: movie.title,
+                      value: movie._id,
+                    }))}
+                  />
                 </Form.Item>
               </Col>
               <Col span={8}>

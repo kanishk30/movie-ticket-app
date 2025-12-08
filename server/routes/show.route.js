@@ -94,4 +94,22 @@ showRouter.get("get-show-by-id", async (req, res) => {
     });
   }
 });
+
+// get all shows..
+
+showRouter.get("/get-all-shows", async (req, res) => {
+  try {
+    const allShows = await Show.find({}).populate("movie");
+    res.send({
+      success: true,
+      message: "All shows fetched successfully",
+      data: allShows,
+    });
+  } catch (error) {
+    res.send({
+      success: false,
+      message: `Not able to fetch shows ${error}`,
+    });
+  }
+});
 module.exports = showRouter;

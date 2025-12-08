@@ -16,3 +16,12 @@ export const addShow = async (payload) => {
     return error.message;
   }
 };
+
+export const getShows = async () => {
+  try {
+    const response = await api.get("/api/shows/get-all-shows");
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};
