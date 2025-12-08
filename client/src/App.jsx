@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Partner from "./pages/Partner";
+import SingleMovie from "./pages/SingleMovie";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -36,6 +37,7 @@ function App() {
           />
           <Route path="/admin" element={<Admin />} />
           <Route path="/partner" element={<Partner />} />
+          <Route path="/singleMovie/:id" element={<SingleMovie />} />
         </Routes>
       </BrowserRouter>
     </>

@@ -3,12 +3,13 @@ import { Card, Tag, Typography } from "antd";
 const { Meta } = Card;
 const { Text } = Typography;
 const MovieCard = (props) => {
-  const { genre, rating, title, language, posterPath } = props;
+  const { genre, rating, title, language, posterPath, onClick } = props;
   return (
     <Card
       hoverable
       style={{ width: 240 }}
       cover={<img draggable={false} alt={title} src={posterPath} />}
+      onClick={onClick}
     >
       <Meta title={title} />
       <div>

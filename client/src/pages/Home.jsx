@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import NavBar from "../components/Navbar.jsx";
 import MovieCard from "../components/MovieCard.jsx";
 import { getAllMovies } from "../backend/movie.js";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [movies, setMovies] = useState(null);
+
+  const navigate = useNavigate();
 
   const fetchMovies = async () => {
     const movies = await getAllMovies();
@@ -29,7 +32,11 @@ const Home = () => {
       >
         {movies &&
           movies.map((movieObj, index) => (
-            <MovieCard key={movieObj._id} {...movieObj} />
+            <MovieCard
+              key={movieObj._id}
+              {...movieObj}
+              onClick={() => navigate(`/singleMovie/${movieObj._id}`)}
+            />
           ))}
       </div>
     </>

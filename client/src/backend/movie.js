@@ -31,3 +31,11 @@ export const updateMovie = async (values) => {
     console.log("updateMovie", error);
   }
 };
+
+export const getSingleMovie = async (id) => {
+  try {
+    const response = await api.get(`/api/movie/${id}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {}
+};
