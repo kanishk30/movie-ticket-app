@@ -6,6 +6,7 @@ import { useState } from "react";
 import { getAllMovies } from "../../backend/movie";
 
 import { getShows, addShow } from "../../backend/show";
+import moment from "moment";
 
 const showModal = ({
   isModalOpen,
@@ -78,7 +79,9 @@ const showModal = ({
     {
       title: "Show Date",
       dataIndex: "date",
-      key: "date",
+      render: (value, record) => {
+        return moment(record.date).format("DD-MM-YYYY");
+      },
     },
     {
       title: "Show Time",

@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getSingleMovie } from "../backend/movie";
-import { Card, Col, Row, Image, Typography, Tag, Rate, Button } from "antd";
+import {
+  Card,
+  Col,
+  Row,
+  Image,
+  Typography,
+  Tag,
+  Rate,
+  Button,
+  Input,
+} from "antd";
 import moment from "moment";
 
 const { Title } = Typography;
 
 const SingleMovie = () => {
   const [movie, setMovie] = useState(null);
+  const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
+  const navigate = useNavigate();
   const { id } = useParams();
-  console.log("movieId", id);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -25,6 +36,12 @@ const SingleMovie = () => {
       fetchMovie();
     }
   }, [id]);
+
+  const handleDateChange = (ev) => {
+    const dateSelected = ev.target.value;
+    setDate(dateSelected);
+    navigate(`/singleMovie/${id}?date=${dateSelected}`);
+  };
 
   if (!movie) return null;
 
@@ -64,6 +81,11 @@ const SingleMovie = () => {
 
             <div style={{ marginTop: 16 }}>
               <Button type="primary">Book Tickets</Button>
+            </div>
+            {/* date picker > */}
+            <div className="d-flex">
+              <label>Choose Date:</label>
+              <Input onChange={handleDateChange} type="date" value={date} />
             </div>
           </Col>
         </Row>
