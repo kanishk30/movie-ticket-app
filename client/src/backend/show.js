@@ -25,3 +25,15 @@ export const getShows = async (payload) => {
     return error.message;
   }
 };
+
+export const getAllTheatresAndShows = async (payload) => {
+  try {
+    const response = await api.post(
+      `/api/shows/get-all-theatres-by-movie`,
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+};

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSingleMovie } from "../backend/movie";
+import { getAllTheatresAndShows } from "../backend/show";
 import {
   Card,
   Col,
@@ -19,6 +20,9 @@ const { Title } = Typography;
 const SingleMovie = () => {
   const [movie, setMovie] = useState(null);
   const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
+
+  const [theatres, setTheatres] = useState(null);
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -36,6 +40,22 @@ const SingleMovie = () => {
       fetchMovie();
     }
   }, [id]);
+
+  useEffect(() => {
+    const fetchAllTheatresAndShows = async () => {
+      try {
+        const response = await getAllTheatresAndShows({
+          movie: id,
+          date: date,
+        });
+        setTheatres(response.shows);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchAllTheatresAndShows();
+  }, [date]);
 
   const handleDateChange = (ev) => {
     const dateSelected = ev.target.value;
@@ -90,6 +110,17 @@ const SingleMovie = () => {
           </Col>
         </Row>
       </Card>
+
+      {theatres && theatres.length > 0 ? (
+        <>
+          <h2>Theatres</h2>
+          {theatres.map((theatre) => {
+            return (
+              <div key={theatre._id}>Ticket Price: {theatre.ticketPrice}</div>
+            );
+          })}
+        </>
+      ) : null}
     </div>
   );
 };

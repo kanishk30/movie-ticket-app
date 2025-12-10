@@ -57,10 +57,12 @@ showRouter.put("/update", async (req, res) => {
 
 // get all shows & theatres for a movie for a given date
 
-showRouter.get("/get-all-theatres-by-movie", async (req, res) => {
+showRouter.post("/get-all-theatres-by-movie", async (req, res) => {
   try {
     const { movie, date } = req.body;
-    const shows = await Show.find({ movie, date });
+    const shows = await Show.find({ movie, date })
+      .populate("theatre")
+      .populate("movie");
 
     res.send({
       success: true,
