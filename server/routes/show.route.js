@@ -61,13 +61,33 @@ showRouter.post("/get-all-theatres-by-movie", async (req, res) => {
   try {
     const { movie, date } = req.body;
     const shows = await Show.find({ movie, date })
-      .populate("theatre")
-      .populate("movie");
+      .populate("movie")
+      .populate("theatre");
+
+    // map shows with unique theatres.
+    // filtering out shows with unique theatre.
+    let uniqueTheatres = [];
+    shows.forEach((show) => {
+      let isTheatre = uniqueTheatres.find(
+        (theatre) => theatre._id === show.theatre._id
+      );
+
+      if (!isTheatre) {
+        let showsofThisTheatre = shows.filter(
+          (showObj) => showObj.theatre._id === show.theatre._id
+        );
+
+        uniqueTheatres.push({
+          ...show.theatre._doc,
+          shows: showsofThisTheatre,
+        });
+      }
+    });
 
     res.send({
       success: true,
       message: "Shows fetched successfully",
-      shows: shows,
+      shows: uniqueTheatres,
     });
   } catch (error) {
     console.log("error", error);
