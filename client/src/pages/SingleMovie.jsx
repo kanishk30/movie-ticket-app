@@ -136,7 +136,7 @@ const SingleMovie = () => {
                               <li
                                 key={singleShow._id}
                                 onClick={() =>
-                                  navigate(`/book-show/${singleShow._id}`)
+                                  navigate(`/bookshow/${singleShow._id}`)
                                 }
                               >
                                 {moment(singleShow.time, "HH:mm").format(

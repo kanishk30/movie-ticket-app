@@ -100,9 +100,9 @@ showRouter.post("/get-all-theatres-by-movie", async (req, res) => {
 
 // get details of a show by ID
 
-showRouter.get("get-show-by-id", async (req, res) => {
+showRouter.post("/get-show-by-id", async (req, res) => {
   try {
-    const show = Show.findById(req.body.showId);
+    const show = await Show.findById(req.body.showId).populate("theatre");
     res.send({
       success: true,
       message: "Shows fetched successfully",
