@@ -6,7 +6,14 @@ function PublicRoute({ children }) {
   const { userData } = useSelector((state) => state.user);
 
   if (userData) {
-    return <Navigate to={"/home"} />;
+    // Redirect based on role
+    if (userData.role === "admin") {
+      return <Navigate to="/admin" />;
+    } else if (userData.role === "partner") {
+      return <Navigate to="/partner" />;
+    } else {
+      return <Navigate to="/home" />;
+    }
   }
   return children;
 }
