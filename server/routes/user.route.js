@@ -1,107 +1,153 @@
 const express = require("express");
-
 const User = require("../models/user.model.js");
-
-const userRouter = express.Router(); // router frome express.
-
-const bcrypt = require("bcrypt");
-
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const isAuth = require("../middlewares/authMiddleware.js");
 
-// register (signup)
+const userRouter = express.Router(); // Route
+
+// Sign up Route
 
 userRouter.post("/register", async (req, res) => {
   try {
-    const doesUserExists = await User.findOne({ email: req.body.email });
-    if (doesUserExists) {
-      res.send({
+    // Prevent admin registration through API
+    if (req.body.role === "admin") {
+      return res.send({
         success: false,
-        message: "User already exists with the email",
+        message: "Admin registration is not allowed through this endpoint",
       });
     }
 
-    // hashing password
-    const salt = await bcrypt.genSalt(); // default 10 rounds.
-    console.log(salt);
-    const hashedPwd = bcrypt.hashSync(req.body.password, salt);
-    req.body.password = hashedPwd;
-    // fresh user:
+    // check if the user already exists
+    const userExists = await User.findOne({ email: req.body.email });
+    if (userExists) {
+      return res.send({
+        success: false,
+        message: "User Already Exists with the Email",
+      });
+    }
+
+    // Set default role to 'user' if not provided or if invalid
+    const allowedRoles = ["user", "partner"];
+    if (!req.body.role || !allowedRoles.includes(req.body.role)) {
+      req.body.role = "user";
+    }
+
+    // hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashPwd = bcrypt.hashSync(req.body.password, salt);
+    req.body.password = hashPwd;
+
     const newUser = await User(req.body);
     await newUser.save();
 
     res.send({
       success: true,
-      message: "User registered successfully",
+      message: "User Registered Successfully",
       user: newUser,
     });
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({ message: "Something went wrong!" });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Registration failed",
+    });
   }
 });
 
-// login (signin)
+// Login Api
 
 userRouter.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
+
     if (!user) {
       return res.send({
         success: false,
-        message: "User does not exist. Please register",
+        message: "User does not exist. Please Register",
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const validPassword = await bcrypt.compare(
       req.body.password,
       user.password
     );
-    console.log(isPasswordValid);
-    if (!isPasswordValid) {
+
+    if (!validPassword) {
       return res.send({
         success: false,
-        message: "Please verify the password. It is incorrect.",
+        message: "Sorry, invalid password entered!",
       });
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "10d",
     });
 
     res.cookie("jwtToken", token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
     });
 
-    return res.send({
+    res.send({
       success: true,
-      message: "User logged in successfully.",
-      token: token,
-      user: user,
+      message: "You've successfully logged in!",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       success: false,
-      message: "Something went wrong!",
+      message: "Error in Logging in!",
     });
   }
 });
 
 userRouter.get("/current-user", isAuth, async (req, res) => {
-  const userId = req.userId;
-
-  if (!userId) {
-    return res.send(401).json({ message: "Not authorized. No valid token." });
-  }
-
   try {
-    // trimming off password from final response.
-    const verifiedUser = await User.findById(userId).select("-password");
-    console.log(verifiedUser);
-    res.json(verifiedUser);
+    const verifiedUser = await User.findById(req.userId).select("-password");
+    if (!verifiedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    // Return consistent user data structure
+    res.json({
+      _id: verifiedUser._id,
+      name: verifiedUser.name,
+      email: verifiedUser.email,
+      role: verifiedUser.role,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// Logout route
+userRouter.post("/logout", isAuth, async (req, res) => {
+  try {
+    res.clearCookie("jwtToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+    res.send({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error logging out",
+    });
   }
 });
 
