@@ -1,100 +1,161 @@
 const express = require("express");
-const Theatre = require("../models/theatre.model");
+const Theatre = require("../models/theatre.model.js");
+const isAuth = require("../middlewares/authMiddleware.js");
+const { requirePartnerOrAdmin } = require("../middlewares/roleMiddleware.js");
 
-const theatreRoute = express.Router();
+const theatreRouter = express.Router(); // Route
 
-// add theatre
-
-theatreRoute.post("/add", async (req, res) => {
+theatreRouter.post("/add", isAuth, requirePartnerOrAdmin, async (req, res) => {
   try {
-    console.log("received data in add", req.body);
+    console.log("Received theatre data:", req.body);
+    // Security: Partners can only add theatres with themselves as owner
+    if (req.user.role === "partner") {
+      req.body.owner = req.userId;
+    }
     const newTheatre = new Theatre(req.body);
-    await newTheatre.save();
-
+    const savedTheatre = await newTheatre.save();
+    console.log("Saved theatre:", savedTheatre);
     res.send({
       success: true,
-      message: "New theatre added",
-      data: newTheatre,
+      message: "New theatre has been added!",
+      data: savedTheatre,
     });
-  } catch (error) {
-    console.log("error in add theatre", error);
-
+  } catch (err) {
+    console.error("Error adding theatre:", err);
     res.send({
       success: false,
-      message: error.message || "Failed to add a new theatre",
+      message: err.message,
     });
   }
 });
 
-// get all theatres
-
-theatreRoute.get("/all", async (req, res) => {
+// Get all theatres for Admin route (Admin only)
+theatreRouter.get("/all", isAuth, requirePartnerOrAdmin, async (req, res) => {
   try {
     const allTheatres = await Theatre.find();
     res.send({
       success: true,
-      message: "Successfully fetched all theatres",
+      message: "All theatres fetched!",
       data: allTheatres,
     });
-  } catch (error) {
-    res.status(500).send({
+  } catch (err) {
+    res.send({
       success: false,
-      message: "Server error",
+      message: err.message,
     });
   }
 });
 
-// update theatre
-
-theatreRoute.put("/update", async (req, res) => {
+// Get the theatres of a specific owner (Authenticated - Partner can see their own)
+theatreRouter.post("/get-all-theatres-by-owner", isAuth, async (req, res) => {
   try {
-    await Theatre.findByIdAndUpdate(req.body.theatreId, req.body);
+    const userId = req.userId;
+    const requestedOwnerId = req.body.owner;
+
+    // Security: Partners can only see their own theatres, Admins can see any
+    if (req.user.role === "partner" && requestedOwnerId !== userId) {
+      return res.send({
+        success: false,
+        message: "Access denied. You can only view your own theatres.",
+      });
+    }
+
+    console.log("Getting theatres for owner:", requestedOwnerId);
+    const allTheatres = await Theatre.find({ owner: requestedOwnerId });
+    console.log("Found theatres:", allTheatres.length);
     res.send({
       success: true,
-      message: "Theatre updated successfully",
+      message: "All theatres fetched successfully!",
+      data: allTheatres,
     });
-  } catch (error) {
-    console.log("error in update", error);
+  } catch (err) {
+    console.error("Error fetching theatres by owner:", err);
     res.send({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 });
 
-// delete theatre
+// Update theatre (Partner or Admin)
+theatreRouter.put(
+  "/update",
+  isAuth,
+  requirePartnerOrAdmin,
+  async (req, res) => {
+    try {
+      const theatre = await Theatre.findById(req.body.theatreId);
+      if (!theatre) {
+        return res.send({
+          success: false,
+          message: "Theatre not found",
+        });
+      }
 
-theatreRoute.delete("/delete", async (req, res) => {
-  try {
-    await Theatre.findByIdAndDelete(req.body.theatreId);
-    res.send({
-      success: true,
-      message: "The theatre has been deleted successfully.",
-    });
-  } catch (error) {
-    res.status(500).send({
-      success: false,
-      message: "Server error",
-    });
+      // Security: Partners can only update their own theatres
+      if (
+        req.user.role === "partner" &&
+        theatre.owner.toString() !== req.userId
+      ) {
+        return res.send({
+          success: false,
+          message: "Access denied. You can only update your own theatres.",
+        });
+      }
+
+      await Theatre.findByIdAndUpdate(req.body.theatreId, req.body);
+      // console.log(req.body.theatreId)
+      res.send({
+        success: true,
+        message: "Theatre has been updated!",
+      });
+    } catch (err) {
+      res.send({
+        success: false,
+        message: err.message,
+      });
+    }
   }
-});
+);
 
-// get all theatres by owners
+// Delete theatre (Partner or Admin)
+theatreRouter.put(
+  "/delete",
+  isAuth,
+  requirePartnerOrAdmin,
+  async (req, res) => {
+    try {
+      const theatre = await Theatre.findById(req.body.theatreId);
+      if (!theatre) {
+        return res.send({
+          success: false,
+          message: "Theatre not found",
+        });
+      }
 
-theatreRoute.post("/get-all-theatres-by-owner", async (req, res) => {
-  try {
-    const allTheatresOfOwner = await Theatre.find({ owner: req.body.owner });
-    res.send({
-      success: true,
-      message: "All theatres fetched successfully",
-      data: allTheatresOfOwner,
-    });
-  } catch (error) {
-    res.send({
-      success: false,
-      message: "Something went wrong. Unable to fetch theares.",
-    });
+      // Security: Partners can only delete their own theatres
+      if (
+        req.user.role === "partner" &&
+        theatre.owner.toString() !== req.userId
+      ) {
+        return res.send({
+          success: false,
+          message: "Access denied. You can only delete your own theatres.",
+        });
+      }
+
+      await Theatre.findByIdAndDelete(req.body.theatreId);
+      res.send({
+        success: true,
+        message: "The theatre has been deleted!",
+      });
+    } catch (err) {
+      res.send({
+        success: false,
+        message: err.message,
+      });
+    }
   }
-});
+);
 
-module.exports = theatreRoute;
+module.exports = theatreRouter;

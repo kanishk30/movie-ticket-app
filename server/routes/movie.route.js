@@ -1,28 +1,76 @@
 const express = require("express");
+const Movie = require("../models/movie.model.js");
 const {
   addMovies,
   updateMovie,
-  deleteMovie,
-  getAllMovies,
-  getMovie,
-} = require("../controllers/movie.controllers");
+} = require("../controllers/movie.controllers.js");
+const isAuth = require("../middlewares/authMiddleware.js");
+const { requireAdmin } = require("../middlewares/roleMiddleware.js");
 
-const movieRouter = express.Router(); // router frome express.
+const movieRouter = express.Router(); // Route
 
-// create a movie.
+// Add a Movie (Admin only)
+movieRouter.post("/add", isAuth, requireAdmin, addMovies);
 
-movieRouter.post("/add", addMovies);
+// update movie (Admin only)
+movieRouter.put("/update", isAuth, requireAdmin, updateMovie);
 
-// update
-movieRouter.put("/update", updateMovie);
+// Delete Movie (Admin only)
+movieRouter.delete(
+  "/delete-movie/:id",
+  isAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const movieId = req.params.id;
+      const movie = await Movie.findByIdAndDelete(movieId, req.body);
+      res.send({
+        success: true,
+        message: "The movie has been updated!",
+        data: movie,
+      });
+    } catch (error) {
+      res.send({
+        success: false,
+        message: "Server Error",
+      });
+    }
+  }
+);
 
-// delete
-movieRouter.delete("/delete/:id", deleteMovie);
+// get all Movies
+movieRouter.get("/all", async (req, res) => {
+  try {
+    const allMovies = await Movie.find();
+    res.send({
+      success: true,
+      message: "All movies have been fetched!",
+      data: allMovies,
+    });
+  } catch (error) {
+    res.send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
-// get all movies
-movieRouter.get("/all", getAllMovies);
+// get a specific Movie
 
-// get movie by id
-movieRouter.get("/:id", getMovie);
+movieRouter.get("/:id", async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+    res.send({
+      success: true,
+      message: "Movie fetched successfully!",
+      data: movie,
+    });
+  } catch (error) {
+    res.send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 module.exports = movieRouter;

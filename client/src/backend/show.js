@@ -38,7 +38,7 @@ export const getAllTheatresAndShows = async (payload) => {
   }
 };
 
-export const getShow = async (payload) => {
+export const getTheShow = async (payload) => {
   try {
     const response = await api.post(`/api/shows/get-show-by-id`, payload);
     return response.data;

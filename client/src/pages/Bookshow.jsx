@@ -1,69 +1,71 @@
-// total seats layout.. grey out of booked seats, show avaikbale a rest of them.
-// on cliek on avaioable seat > book the seat.
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getShow } from "../backend/show";
-import { Button, Card, Divider, message, Space, Typography } from "antd";
+import { getTheShow } from "../backend/show";
+import { createCheckoutSession } from "../backend/booking";
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Button,
+  Divider,
+  Space,
+  message,
+} from "antd";
+import { useSelector } from "react-redux";
 import moment from "moment";
 
 const { Title, Text } = Typography;
-let COLUMNS = 10;
-const Bookshow = () => {
-  const { id } = useParams();
+
+function BookShow() {
+  const params = useParams();
+  const navigate = useNavigate();
+  const { userData } = useSelector((state) => state.user);
   const [show, setShow] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const columns = 10;
+
+  const getData = async () => {
+    try {
+      const res = await getTheShow({ showId: params.id });
+      if (res && res.success && res.data) {
+        setShow(res.data);
+      } else if (typeof res === "string") {
+        message.error(res);
+      } else {
+        message.error("Failed to load show details");
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Error loading show details");
+    }
+  };
 
   useEffect(() => {
-    const fetchShow = async () => {
-      try {
-        const res = await getShow({ showId: id });
-        if (res.success) {
-          setShow(res.data);
-        }
-      } catch (error) {
-        console.error(error);
-        message.error("error showing show details");
-      }
-    };
-
-    if (id) {
-      fetchShow();
-    }
-  }, [id]);
-
-  const getSeats = () => {
-    let columns = 10;
-    const totalSeats = show?.totalSeats;
-    let rows = Math.ceil(totalSeats / columns);
-  };
-
-  const handleSeatClick = (seatNumber) => {
-    console.log(seatNumber);
-    if (isSeatBooked(seatNumber)) return;
-
-    // de-select
-    if (isSeatSelected(seatNumber)) {
-      setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
-    } else {
-      // select for first time:
-
-      setSelectedSeats([...selectedSeats, seatNumber]);
-    }
-
-    setTotalPrice(selectedSeats.length * show.ticketPrice);
-  };
+    getData();
+  }, []);
 
   const isSeatBooked = (seatNumber) => {
-    //
-    return show?.bookedSeats.includes(seatNumber) || false;
+    return show?.bookedSeats?.includes(seatNumber) || false;
   };
 
   const isSeatSelected = (seatNumber) => {
-    //
-    return selectedSeats.includes(seatNumber) || false;
+    return selectedSeats.includes(seatNumber);
+  };
+
+  const handleSeatClick = (seatNumber) => {
+    if (isSeatBooked(seatNumber)) {
+      return; // Can't select booked seats
+    }
+
+    if (isSeatSelected(seatNumber)) {
+      // Deselect seat
+      setSelectedSeats(selectedSeats.filter((seat) => seat !== seatNumber));
+    } else {
+      // Select seat
+      setSelectedSeats([...selectedSeats, seatNumber]);
+    }
   };
 
   const getSeatStyle = (seatNumber) => {
@@ -77,167 +79,227 @@ const Bookshow = () => {
     if (isSeatSelected(seatNumber)) {
       return {
         backgroundColor: "#1890ff",
+        color: "white",
         cursor: "pointer",
-        color: "#ffffff",
       };
     }
-
     return {
       backgroundColor: "#f0f0f0",
       cursor: "pointer",
     };
   };
 
-  const handleBooking = async () => {};
+  const totalPrice = selectedSeats.length * (show?.ticketPrice || 0);
+
+  const handleBooking = async () => {
+    if (selectedSeats.length === 0) {
+      message.warning("Please select at least one seat");
+      return;
+    }
+
+    if (!userData || !userData._id) {
+      message.error("Please login to book tickets");
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await createCheckoutSession({
+        amount: totalPrice,
+        userId: userData._id,
+        showId: show._id,
+        seats: selectedSeats,
+        showName: show.movie?.title || "Movie",
+        customerName: userData.name || "",
+        customerEmail: userData.email || "",
+      });
+
+      if (response.success && response.data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url;
+      } else {
+        message.error(response.message || "Failed to initiate payment");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error in booking:", error);
+      message.error("Failed to initiate payment");
+      setLoading(false);
+    }
+  };
 
   if (!show) {
-    return null;
+    return <div style={{ padding: 20 }}>Loading...</div>;
   }
 
+  const totalSeats = show.totalSeats || 0;
+
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       <Card>
+        {/* Show Information */}
         <div style={{ marginBottom: 24 }}>
-          <Title level={2}>{show?.movie?.title}</Title>
+          <Title level={2}>{show.movie?.title || "Movie"}</Title>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div>
-              <Text>
-                <strong>Theatre: </strong>
-              </Text>
-              <Text>{show?.theatre?.name}</Text>
+              <Text strong>Theatre: </Text>
+              <Text>{show.theatre?.name || "N/A"}</Text>
             </div>
             <div>
-              <Text>
-                <strong>Date: </strong>
-              </Text>
-              <Text>{moment(show?.date).format("DD-MM-YYYY")}</Text>
+              <Text strong>Address: </Text>
+              <Text>{show.theatre?.address || "N/A"}</Text>
             </div>
             <div>
-              <Text>
-                <strong>Time: </strong>
-              </Text>
-              <Text>{show?.time}</Text>
+              <Text strong>Date: </Text>
+              <Text>{moment(show.date).format("MMMM DD, YYYY")}</Text>
             </div>
             <div>
-              <Text>
-                <strong>Price: </strong>
-              </Text>
-              <Text>{show?.ticketPrice}</Text>
+              <Text strong>Time: </Text>
+              <Text>{show.time}</Text>
+            </div>
+            <div>
+              <Text strong>Price per ticket: </Text>
+              <Text>₹{show.ticketPrice}</Text>
             </div>
           </div>
         </div>
-      </Card>
-      <Divider />
 
-      {/* screen UI > */}
+        <Divider />
 
-      <div style={{ textAlign: "center", marginBottom: "30px" }}>
-        <Title strong level={3}>
-          SCREEN
-        </Title>
-      </div>
-      {/* seats UI */}
-
-      <div style={{ marginBottom: "24px" }}>
+        {/* Screen */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
-            gap: 8,
-            marginBottom: 20,
+            textAlign: "center",
+            marginBottom: 30,
+            padding: "10px 0",
+            backgroundColor: "#f0f0f0",
+            borderRadius: 4,
           }}
         >
-          {Array.from({ length: 100 }, (_, index) => {
-            const seatNumber = index + 1;
-            return (
-              <Button
-                onClick={() => handleSeatClick(seatNumber)}
-                disabled={isSeatBooked(seatNumber)}
-                key={seatNumber + "seatNo"}
+          <Text strong style={{ fontSize: 16 }}>
+            SCREEN
+          </Text>
+        </div>
+
+        {/* Seating Arrangement */}
+        <div style={{ marginBottom: 24 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${columns}, 1fr)`,
+              gap: 8,
+              marginBottom: 20,
+            }}
+          >
+            {Array.from({ length: totalSeats }, (_, index) => {
+              const seatNumber = index + 1;
+              return (
+                <Button
+                  key={seatNumber}
+                  onClick={() => handleSeatClick(seatNumber)}
+                  disabled={isSeatBooked(seatNumber)}
+                  style={{
+                    ...getSeatStyle(seatNumber),
+                    height: 40,
+                    minWidth: 40,
+                    padding: 0,
+                    border: "1px solid #d9d9d9",
+                  }}
+                >
+                  {seatNumber}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ marginBottom: 24, textAlign: "center" }}>
+          <Space size="large">
+            <Space>
+              <div
                 style={{
-                  ...getSeatStyle(seatNumber),
-                  height: 40,
-                  minWidth: 40,
-                  padding: 2,
-                  border: "solid 1px #cacaca",
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#f0f0f0",
+                  border: "1px solid #d9d9d9",
                 }}
-              >
-                {seatNumber}
-              </Button>
-            );
-          })}
+              />
+              <Text>Available</Text>
+            </Space>
+            <Space>
+              <div
+                style={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#1890ff",
+                }}
+              />
+              <Text>Selected</Text>
+            </Space>
+            <Space>
+              <div
+                style={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#d9d9d9",
+                }}
+              />
+              <Text>Booked</Text>
+            </Space>
+          </Space>
         </div>
-      </div>
 
-      {/* Legends */}
-      <div style={{ marginBottom: "24px", textAlign: "center" }}>
-        <Space size={"large"}>
-          <Space>
-            <div
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: "#f0f0f0",
-                border: "solid 1px #d9d9d9",
-              }}
-            />
-            <Text>Available</Text>
-          </Space>
-          <Space>
-            <div
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: "#d9d9d9",
-              }}
-            />
-            <Text>Booked</Text>
-          </Space>
-        </Space>
-      </div>
-      <Divider />
-      {/* booking summary */}
+        <Divider />
 
-      <div style={{ marginBottom: "24px", textAlign: "center" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            width: "100%",
-          }}
+        {/* Booking Summary */}
+        <div style={{ marginBottom: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              width: "100%",
+            }}
+          >
+            <div>
+              <Text strong>Selected Seats: </Text>
+              <Text>
+                {selectedSeats.length > 0
+                  ? selectedSeats.sort((a, b) => a - b).join(", ")
+                  : "None"}
+              </Text>
+            </div>
+            <div>
+              <Text strong>Total Seats: </Text>
+              <Text>{selectedSeats.length}</Text>
+            </div>
+            <div>
+              <Text strong>Total Price: </Text>
+              <Text style={{ fontSize: 18, color: "#1890ff" }}>
+                ₹{totalPrice}
+              </Text>
+            </div>
+          </div>
+        </div>
+
+        {/* Book Button */}
+        <Button
+          type="primary"
+          size="large"
+          block
+          onClick={handleBooking}
+          disabled={selectedSeats.length === 0 || loading}
+          loading={loading}
+          style={{ height: 50, fontSize: 16 }}
         >
-          <div>
-            <Text strong>Selected Seats:</Text>
-            <Text>
-              {selectedSeats.length > 0
-                ? selectedSeats.sort((a, b) => a - b).join(",")
-                : "None"}
-            </Text>
-          </div>
-          <div>
-            <Text strong>Total Seats:</Text>
-            <Text>{selectedSeats.length}</Text>
-          </div>
-          <div>
-            <Text strong>Total Price:</Text>
-            <Text>{totalPrice}</Text>
-          </div>
-        </div>
-      </div>
-
-      {/* book button */}
-      <Button
-        type="primary"
-        size="large"
-        onClick={handleBooking}
-        loading={loading}
-        disabled={selectedSeats.length === 0 || loading}
-      >
-        Book now
-      </Button>
+          {loading ? "Processing..." : "Pay with Stripe"}
+        </Button>
+      </Card>
     </div>
   );
-};
+}
 
-export default Bookshow;
+export default BookShow;
