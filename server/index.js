@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const dbConfig = require("./dbConfig.js");
+const rateLimit = require('express-rate-limit');
 
 dotEnv.config();
 const app = express();
@@ -14,6 +15,15 @@ const movieRoutes = require("./routes/movie.route.js");
 const theatreRoutes = require("./routes/theatre.route.js");
 const showRoutes = require("./routes/show.route.js");
 const bookingRoutes = require("./routes/booking.route.js");
+
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  message: "Too many requests, please try again later.",
+})
+
+app.use(limiter);
 
 // Register webhook route with raw body parser BEFORE express.json()
 // This ensures the webhook receives raw body for signature verification
