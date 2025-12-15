@@ -45,6 +45,25 @@ export const verifyPayment = async (sessionId) => {
   }
 };
 
+// Sync pending booking
+export const syncPendingBooking = async (bookingId) => {
+  try {
+    const response = await api.post("/api/booking/sync-pending-booking", {
+      bookingId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error syncing booking:", error);
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to sync booking",
+    };
+  }
+};
+
 // Get user bookings
 export const getUserBookings = async (userId) => {
   try {

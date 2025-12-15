@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { getUserBookings } from "../../backend/booking";
+import { getUserBookings, syncPendingBooking } from "../../backend/booking";
 import {
   Card,
   Tag,
@@ -57,7 +57,43 @@ function MyBookings() {
   };
 
   useEffect(() => {
-    fetchBookings();
+    const loadAndSync = async () => {
+      await fetchBookings();
+      
+      // Wait a bit for bookings to be set, then sync pending ones
+      setTimeout(async () => {
+        if (!userData || !userData._id) return;
+
+        // Fetch fresh bookings to check for pending ones
+        const response = await getUserBookings(userData._id);
+        if (response.success && response.data) {
+          const pendingBookings = response.data.filter(
+            (booking) => booking.status === "pending" && booking.stripeSessionId
+          );
+
+          // Sync each pending booking
+          for (const booking of pendingBookings) {
+            try {
+              const result = await syncPendingBooking(booking._id);
+              if (result.success) {
+                console.log(`Booking ${booking._id} synced successfully`);
+              }
+            } catch (error) {
+              console.error(`Error syncing booking ${booking._id}:`, error);
+            }
+          }
+
+          // Refresh bookings after syncing
+          if (pendingBookings.length > 0) {
+            setTimeout(() => {
+              fetchBookings();
+            }, 1000);
+          }
+        }
+      }, 500);
+    };
+
+    loadAndSync();
   }, [userData]);
 
   const getStatusConfig = (status) => {
