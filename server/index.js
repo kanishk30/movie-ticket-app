@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 
 const dbConfig = require("./dbConfig.js");
 const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
 
 dotEnv.config();
 const app = express();
@@ -24,7 +25,7 @@ const limiter = rateLimit({
 })
 
 app.use(limiter);
-
+app.use(mongoSanitize());
 // Register webhook route with raw body parser BEFORE express.json()
 // This ensures the webhook receives raw body for signature verification
 app.post(
